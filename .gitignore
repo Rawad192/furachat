@@ -1,0 +1,27 @@
+# Rust
+/server/target/
+/server/data/
+**/*.rs.bk
+
+# Node
+/client/node_modules/
+/client/dist/
+/client/.vite/
+
+# Tauri
+/client/src-tauri/target/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
