@@ -1,0 +1,170 @@
+/* Vue Vocal — interface de salon vocal */
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  background: var(--bg-primary);
+  gap: 24px;
+  padding: 32px;
+}
+
+.header {
+  text-align: center;
+}
+
+.channelName {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.channelSub {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.participants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  max-width: 600px;
+}
+
+.participant {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  min-width: 100px;
+  transition: border-color var(--transition-fast);
+}
+
+.participant.speaking {
+  border-color: var(--accent-success);
+  box-shadow: 0 0 12px rgba(46, 204, 113, 0.3);
+}
+
+.participantAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 600;
+  overflow: hidden;
+}
+
+.participantAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.participantName {
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.participantMuted {
+  font-size: 11px;
+  color: var(--accent-danger);
+}
+
+/* Contrôles audio */
+.controls {
+  display: flex;
+  gap: 12px;
+}
+
+.controlBtn {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.muteBtn {
+  composes: controlBtn;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.muteBtn:hover {
+  background: var(--bg-hover);
+}
+
+.muteBtn.muted {
+  background: var(--accent-danger);
+  border-color: var(--accent-danger);
+  color: white;
+}
+
+.deafenBtn {
+  composes: controlBtn;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.deafenBtn:hover {
+  background: var(--bg-hover);
+}
+
+.deafenBtn.deafened {
+  background: var(--accent-danger);
+  border-color: var(--accent-danger);
+  color: white;
+}
+
+.leaveBtn {
+  composes: controlBtn;
+  background: var(--accent-danger);
+  color: white;
+}
+
+.leaveBtn:hover {
+  background: #c0392b;
+}
+
+.joinBtn {
+  padding: 14px 32px;
+  background: var(--accent-success);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: var(--radius-lg);
+  transition: background var(--transition-fast);
+}
+
+.joinBtn:hover {
+  background: #27ae60;
+}
+
+.noiseToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.noiseToggle input {
+  width: auto;
+}

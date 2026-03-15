@@ -1,0 +1,17 @@
+/* Layout principal FuraChat */
+/* Structure: ServerBar (haut) → [ChannelSidebar | ChatArea | MemberList] → ContactBar (bas) */
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.middle {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}

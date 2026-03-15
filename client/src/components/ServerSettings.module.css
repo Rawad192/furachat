@@ -1,0 +1,218 @@
+/* Paramètres du serveur */
+.container {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 220px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  padding: 16px 0;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.sidebarTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  padding: 8px 16px;
+}
+
+.sidebarItem {
+  padding: 8px 16px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebarItem:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.sidebarItem.active {
+  background: var(--bg-active);
+  color: var(--text-primary);
+}
+
+.content {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+}
+
+.section {
+  max-width: 600px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+}
+
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  min-height: 80px;
+  resize: vertical;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.btnPrimary {
+  composes: btn;
+  background: var(--accent-primary);
+  color: white;
+}
+
+.btnPrimary:hover {
+  background: var(--accent-hover);
+}
+
+.btnDanger {
+  composes: btn;
+  background: var(--accent-danger);
+  color: white;
+}
+
+.btnDanger:hover {
+  background: #c0392b;
+}
+
+.btnSecondary {
+  composes: btn;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.btnSecondary:hover {
+  background: var(--bg-hover);
+}
+
+.back {
+  font-size: 14px;
+  color: var(--text-link);
+  cursor: pointer;
+  margin-bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.back:hover {
+  text-decoration: underline;
+}
+
+/* Rôles */
+.roleList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.roleItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.roleColor {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.roleName {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.roleActions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Invitations */
+.inviteCode {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+.inviteCodeText {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.copyBtn {
+  font-size: 13px;
+  padding: 6px 14px;
+  background: var(--accent-primary);
+  color: white;
+  border-radius: var(--radius-md);
+}
+
+.copyBtn:hover {
+  background: var(--accent-hover);
+}
+
+.dangerZone {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--accent-danger);
+}
+
+.dangerTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-danger);
+  margin-bottom: 12px;
+}
