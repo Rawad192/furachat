@@ -7,6 +7,7 @@ use axum::{
 };
 use std::path::PathBuf;
 
+use crate::api::upload_helpers::read_image_field;
 use crate::auth::middleware::AuthUser;
 use crate::db::queries::users;
 use crate::error::AppError;
@@ -62,11 +63,11 @@ async fn upload_avatar(
     auth: AuthUser,
     mut multipart: Multipart,
 ) -> Result<Json<serde_json::Value>, AppError> {
-    while let Some(field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
+    while let Some(mut field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
         if field.name() == Some("image") || field.name() == Some("file") {
+            let data = read_image_field(&mut field).await?;
             let filename = format!("{}.png", auth.user_id);
             let path = PathBuf::from(&state.config.data_dir).join("avatars").join(&filename);
-            let data = field.bytes().await.map_err(|e| AppError::BadRequest(e.to_string()))?;
             tokio::fs::write(&path, &data).await?;
 
             let avatar_path = format!("avatars/{}", filename);
@@ -86,11 +87,11 @@ async fn upload_banner(
     auth: AuthUser,
     mut multipart: Multipart,
 ) -> Result<Json<serde_json::Value>, AppError> {
-    while let Some(field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
+    while let Some(mut field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
         if field.name() == Some("image") || field.name() == Some("file") {
+            let data = read_image_field(&mut field).await?;
             let filename = format!("{}_banner.png", auth.user_id);
             let path = PathBuf::from(&state.config.data_dir).join("banners").join(&filename);
-            let data = field.bytes().await.map_err(|e| AppError::BadRequest(e.to_string()))?;
             tokio::fs::write(&path, &data).await?;
 
             let banner_path = format!("banners/{}", filename);

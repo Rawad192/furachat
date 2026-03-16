@@ -1,5 +1,6 @@
 // Client WebSocket singleton — gère la connexion, reconnexion et dispatch des événements
 import type { WsMessage, ServerEventType } from '../types';
+import { API_BASE_URL } from '../config';
 
 type EventHandler = (data: WsMessage) => void;
 
@@ -17,8 +18,16 @@ class WsClient {
     this.token = token;
     this.intentionalClose = false;
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const url = `${protocol}//${window.location.host}/ws`;
+    let url: string;
+    if (API_BASE_URL) {
+      // Mode Tauri ou URL explicite — construire le WS à partir de l'URL configurée
+      const base = API_BASE_URL.replace(/^http/, 'ws');
+      url = `${base}/ws`;
+    } else {
+      // Mode dev Vite — utiliser window.location (le proxy redirige /ws)
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      url = `${protocol}//${window.location.host}/ws`;
+    }
 
     this.ws = new WebSocket(url);
 

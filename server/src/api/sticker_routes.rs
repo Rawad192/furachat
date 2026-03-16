@@ -9,6 +9,7 @@ use axum::{
 use std::path::PathBuf;
 use uuid::Uuid;
 
+use crate::api::upload_helpers::read_image_field;
 use crate::auth::middleware::AuthUser;
 use crate::db::queries::stickers;
 use crate::error::AppError;
@@ -40,13 +41,13 @@ async fn create_sticker(
     let mut name = String::new();
     let mut file_data = None;
 
-    while let Some(field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
+    while let Some(mut field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
         match field.name() {
             Some("name") => {
                 name = field.text().await.map_err(|e| AppError::BadRequest(e.to_string()))?;
             }
             Some("file") => {
-                file_data = Some(field.bytes().await.map_err(|e| AppError::BadRequest(e.to_string()))?);
+                file_data = Some(read_image_field(&mut field).await?);
             }
             _ => {}
         }

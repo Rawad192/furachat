@@ -44,6 +44,16 @@ async fn create_channel(
         return Err(AppError::BadRequest(format!("Type de salon invalide : {}", body.channel_type)));
     }
 
+    // Vérifie que la catégorie appartient bien à ce serveur
+    if let Some(ref cat_id) = body.category_id {
+        let cat = channels::get_category(&conn, cat_id)?;
+        if cat.server_id != server_id {
+            return Err(AppError::BadRequest(
+                "La catégorie spécifiée n'appartient pas à ce serveur".to_string(),
+            ));
+        }
+    }
+
     let channel = channels::create_channel(
         &conn,
         &server_id,

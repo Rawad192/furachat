@@ -6,9 +6,8 @@ import styles from './LoginScreen.module.css';
 export default function LoginScreen() {
   const { login, register, loading, error, clearError } = useAuth();
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   const switchMode = () => {
     setMode(mode === 'login' ? 'register' : 'login');
@@ -18,9 +17,9 @@ export default function LoginScreen() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (mode === 'login') {
-      await login(email, password);
+      await login(username, password);
     } else {
-      await register(username, email, password);
+      await register(username, password);
     }
   };
 
@@ -39,39 +38,21 @@ export default function LoginScreen() {
         {error && <div className={styles.error}>{error}</div>}
 
         <form className={styles.form} onSubmit={handleSubmit}>
-          {mode === 'register' && (
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="username">
-                Nom d'utilisateur
-              </label>
-              <input
-                id="username"
-                className={styles.input}
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="MonPseudo"
-                required
-                minLength={2}
-                maxLength={32}
-                autoComplete="username"
-              />
-            </div>
-          )}
-
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="email">
-              Adresse e-mail
+            <label className={styles.label} htmlFor="username">
+              Nom d'utilisateur
             </label>
             <input
-              id="email"
+              id="username"
               className={styles.input}
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="vous@exemple.com"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="MonPseudo"
               required
-              autoComplete="email"
+              minLength={2}
+              maxLength={32}
+              autoComplete="username"
             />
           </div>
 
@@ -87,7 +68,7 @@ export default function LoginScreen() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              minLength={6}
+              minLength={4}
               autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
             />
           </div>
