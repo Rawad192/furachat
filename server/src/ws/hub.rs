@@ -135,4 +135,15 @@ impl Hub {
     pub async fn is_online(&self, user_id: &str) -> bool {
         self.clients.read().await.contains_key(user_id)
     }
+
+    /// Vérifie si deux utilisateurs partagent un salon vocal
+    pub async fn share_voice_channel(&self, user_a: &str, user_b: &str) -> bool {
+        let voice = self.voice_rooms.read().await;
+        for members in voice.values() {
+            if members.contains(user_a) && members.contains(user_b) {
+                return true;
+            }
+        }
+        false
+    }
 }

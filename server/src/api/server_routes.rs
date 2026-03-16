@@ -8,6 +8,7 @@ use axum::{
 };
 use std::path::PathBuf;
 
+use crate::api::upload_helpers::read_image_field;
 use crate::auth::middleware::AuthUser;
 use crate::db::queries::servers;
 use crate::error::AppError;
@@ -102,14 +103,14 @@ async fn upload_icon(
         return Err(AppError::Forbidden("Seul le propriétaire peut modifier l'icône".to_string()));
     }
 
-    while let Some(field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
+    while let Some(mut field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
         if field.name() == Some("image") || field.name() == Some("file") {
+            let data = read_image_field(&mut field).await?;
             let filename = format!("{}.png", server_id);
-            let path = PathBuf::from(&state.config.data_dir).join("avatars").join(&filename);
-            let data = field.bytes().await.map_err(|e| AppError::BadRequest(e.to_string()))?;
+            let path = PathBuf::from(&state.config.data_dir).join("icons").join(&filename);
             tokio::fs::write(&path, &data).await?;
 
-            let icon_path = format!("avatars/{}", filename);
+            let icon_path = format!("icons/{}", filename);
             servers::update_server_icon(&conn, &server_id, &icon_path)?;
 
             return Ok(Json(serde_json::json!({ "icon_path": icon_path })));
@@ -131,11 +132,11 @@ async fn upload_banner(
         return Err(AppError::Forbidden("Seul le propriétaire peut modifier la bannière".to_string()));
     }
 
-    while let Some(field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
+    while let Some(mut field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
         if field.name() == Some("image") || field.name() == Some("file") {
+            let data = read_image_field(&mut field).await?;
             let filename = format!("{}_banner.png", server_id);
             let path = PathBuf::from(&state.config.data_dir).join("banners").join(&filename);
-            let data = field.bytes().await.map_err(|e| AppError::BadRequest(e.to_string()))?;
             tokio::fs::write(&path, &data).await?;
 
             let banner_path = format!("banners/{}", filename);

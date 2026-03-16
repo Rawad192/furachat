@@ -53,7 +53,9 @@ fn check_and_archive(pool: &DbPool, config: &Config) -> Result<bool, Box<dyn std
     // Récupère tous les serveurs
     let mut server_stmt = conn.prepare("SELECT id, name FROM servers")?;
     let servers: Vec<(String, String)> = server_stmt
-        .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?
+        .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
+        .into_iter()
+        .flatten()
         .filter_map(|r| r.ok())
         .collect();
 
@@ -66,7 +68,9 @@ fn check_and_archive(pool: &DbPool, config: &Config) -> Result<bool, Box<dyn std
         // Récupère les salons du serveur
         let mut channel_stmt = conn.prepare("SELECT id, name FROM channels WHERE server_id = ?1")?;
         let channels: Vec<(String, String)> = channel_stmt
-            .query_map([server_id], |row| Ok((row.get(0)?, row.get(1)?)))?
+            .query_map([server_id], |row| Ok((row.get(0)?, row.get(1)?)))
+            .into_iter()
+            .flatten()
             .filter_map(|r| r.ok())
             .collect();
 
@@ -91,7 +95,9 @@ fn check_and_archive(pool: &DbPool, config: &Config) -> Result<bool, Box<dyn std
                         "file": file,
                         "created_at": created_at
                     }))
-                })?
+                })
+                .into_iter()
+                .flatten()
                 .filter_map(|r| r.ok())
                 .collect();
 
@@ -123,6 +129,32 @@ fn check_and_archive(pool: &DbPool, config: &Config) -> Result<bool, Box<dyn std
         .format("%Y-%m-%d %H:%M:%S")
         .to_string();
 
+    // Bug 6 fix : supprimer les fichiers attachés avant de supprimer les messages
+    let mut file_stmt = conn.prepare(
+        "SELECT file_path FROM messages WHERE created_at < ?1 AND file_path IS NOT NULL"
+    )?;
+    let orphan_files: Vec<String> = file_stmt
+        .query_map(params![&cutoff], |row| row.get(0))
+        .into_iter()
+        .flatten()
+        .filter_map(|r| r.ok())
+        .collect();
+
+    for file_path in &orphan_files {
+        let full_path = PathBuf::from(&config.data_dir).join(file_path);
+        if full_path.exists() {
+            if let Err(e) = std::fs::remove_file(&full_path) {
+                tracing::warn!("Impossible de supprimer le fichier orphelin {} : {}", full_path.display(), e);
+            } else {
+                tracing::debug!("Fichier orphelin supprimé : {}", full_path.display());
+            }
+        }
+    }
+
+    if !orphan_files.is_empty() {
+        tracing::info!("{} fichiers orphelins supprimés", orphan_files.len());
+    }
+
     let deleted = conn.execute(
         "DELETE FROM messages WHERE created_at < ?1",
         params![&cutoff],
@@ -135,17 +167,22 @@ fn check_and_archive(pool: &DbPool, config: &Config) -> Result<bool, Box<dyn std
 
 /// Récupère l'espace disque disponible en octets
 fn get_available_disk_space(path: &std::path::Path) -> Result<u64, Box<dyn std::error::Error>> {
-    // Utilise statvfs sur Linux/macOS
+    // Unix : utilise statvfs
     #[cfg(unix)]
     {
-        use std::os::unix::fs::MetadataExt;
-        let stat = nix_statvfs(path)?;
-        return Ok(stat);
+        return nix_statvfs(path);
     }
 
-    // Fallback : retourne une valeur élevée pour ne pas déclencher l'archivage par erreur
-    #[cfg(not(unix))]
+    // Windows : utilise GetDiskFreeSpaceExW via FFI
+    #[cfg(windows)]
     {
+        return windows_disk_space(path);
+    }
+
+    // Autres plateformes : retourne une valeur sûre qui déclenche l'archivage plutôt que de l'ignorer
+    #[cfg(not(any(unix, windows)))]
+    {
+        tracing::warn!("Détection d'espace disque non supportée sur cette plateforme");
         Ok(u64::MAX)
     }
 }
@@ -165,5 +202,55 @@ fn nix_statvfs(path: &std::path::Path) -> Result<u64, Box<dyn std::error::Error>
         } else {
             Err("Erreur statvfs".into())
         }
+    }
+}
+
+/// Récupère l'espace disque disponible sur Windows via kernel32
+#[cfg(windows)]
+fn windows_disk_space(path: &std::path::Path) -> Result<u64, Box<dyn std::error::Error>> {
+    use std::ffi::OsStr;
+    use std::os::windows::ffi::OsStrExt;
+
+    // Résoudre le chemin absolu et récupérer la racine du disque
+    let abs_path = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    let root = abs_path
+        .ancestors()
+        .last()
+        .unwrap_or(path)
+        .to_path_buf();
+    let root_str = root.to_str().unwrap_or("C:\\");
+
+    // Convertir en wide string pour l'API Windows
+    let wide: Vec<u16> = OsStr::new(root_str)
+        .encode_wide()
+        .chain(std::iter::once(0))
+        .collect();
+
+    let mut free_bytes_available: u64 = 0;
+    let mut total_bytes: u64 = 0;
+    let mut total_free_bytes: u64 = 0;
+
+    extern "system" {
+        fn GetDiskFreeSpaceExW(
+            lpDirectoryName: *const u16,
+            lpFreeBytesAvailableToCaller: *mut u64,
+            lpTotalNumberOfBytes: *mut u64,
+            lpTotalNumberOfFreeBytes: *mut u64,
+        ) -> i32;
+    }
+
+    let result = unsafe {
+        GetDiskFreeSpaceExW(
+            wide.as_ptr(),
+            &mut free_bytes_available,
+            &mut total_bytes,
+            &mut total_free_bytes,
+        )
+    };
+
+    if result != 0 {
+        Ok(free_bytes_available)
+    } else {
+        Err("Erreur GetDiskFreeSpaceExW".into())
     }
 }

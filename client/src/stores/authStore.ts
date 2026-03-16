@@ -10,8 +10,8 @@ interface AuthState {
   loading: boolean;
   error: string | null;
 
-  login: (email: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
+  register: (username: string, password: string) => Promise<void>;
   logout: () => void;
   restoreSession: () => Promise<void>;
   clearError: () => void;
@@ -23,10 +23,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   loading: false,
   error: null,
 
-  login: async (email, password) => {
+  login: async (username, password) => {
     set({ loading: true, error: null });
     try {
-      const res = await auth.login({ email, password });
+      const res = await auth.login({ username, password });
       localStorage.setItem('token', res.token);
       wsClient.connect(res.token);
       set({ user: res.user, token: res.token, loading: false });
@@ -36,10 +36,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  register: async (username, email, password) => {
+  register: async (username, password) => {
     set({ loading: true, error: null });
     try {
-      const res = await auth.register({ username, email, password });
+      const res = await auth.register({ username, password });
       localStorage.setItem('token', res.token);
       wsClient.connect(res.token);
       set({ user: res.user, token: res.token, loading: false });

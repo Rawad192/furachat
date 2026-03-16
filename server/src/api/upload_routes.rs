@@ -8,6 +8,7 @@ use axum::{
 use std::path::PathBuf;
 use uuid::Uuid;
 
+use crate::api::upload_helpers::read_limited_field;
 use crate::auth::middleware::AuthUser;
 use crate::error::AppError;
 use crate::AppState;
@@ -25,22 +26,14 @@ async fn upload_file(
     _auth: AuthUser,
     mut multipart: Multipart,
 ) -> Result<Json<serde_json::Value>, AppError> {
-    while let Some(field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
+    while let Some(mut field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
         if field.name() == Some("file") {
             let original_name = field
                 .file_name()
                 .map(|s| s.to_string())
                 .unwrap_or_else(|| "file".to_string());
 
-            let data = field.bytes().await.map_err(|e| AppError::BadRequest(e.to_string()))?;
-
-            // Limite la taille
-            if data.len() > state.config.max_upload_size {
-                return Err(AppError::BadRequest(format!(
-                    "Fichier trop volumineux (max {} Mo)",
-                    state.config.max_upload_size / 1024 / 1024
-                )));
-            }
+            let data = read_limited_field(&mut field, state.config.max_upload_size).await?;
 
             // Génère un nom unique pour éviter les collisions
             let ext = original_name

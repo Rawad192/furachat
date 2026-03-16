@@ -59,7 +59,7 @@ impl Config {
 
     /// Crée les répertoires de données nécessaires
     pub fn ensure_data_dirs(&self) -> std::io::Result<()> {
-        let dirs = ["avatars", "banners", "files", "stickers", "badges", "archives"];
+        let dirs = ["avatars", "banners", "icons", "files", "stickers", "badges", "archives"];
         for dir in &dirs {
             std::fs::create_dir_all(self.data_dir.join(dir))?;
         }

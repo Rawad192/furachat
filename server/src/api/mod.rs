@@ -2,6 +2,7 @@
 
 pub mod auth_routes;
 pub mod badge_routes;
+pub mod upload_helpers;
 pub mod channel_routes;
 pub mod forum_routes;
 pub mod friend_routes;

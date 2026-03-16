@@ -279,8 +279,16 @@ async fn handle_voice_leave(ctx: &WsContext, channel_id: &str) -> Option<ServerE
     None
 }
 
-/// Gère le relai de signaling WebRTC
+/// Gère le relai de signaling WebRTC — vérifie que les deux utilisateurs partagent un salon vocal
 async fn handle_webrtc_signal(ctx: &WsContext, target_user_id: &str, signal_data: serde_json::Value) -> Option<ServerEvent> {
+    // Vérification : les deux utilisateurs doivent être dans le même salon vocal
+    if !ctx.hub.share_voice_channel(&ctx.user_id, target_user_id).await {
+        return Some(ServerEvent::Error {
+            code: 403,
+            message: "Signaling WebRTC refusé : vous devez être dans le même salon vocal".to_string(),
+        });
+    }
+
     let event = ServerEvent::WebrtcSignal {
         from_user_id: ctx.user_id.clone(),
         signal_data,
